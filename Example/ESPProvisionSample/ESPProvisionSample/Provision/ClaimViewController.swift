@@ -26,6 +26,11 @@ class ClaimViewController: UIViewController {
     @IBOutlet var headerLabel: UILabel!
     @IBOutlet var nextButton: UIButton!
     
+    enum WorkflowOption {
+        case provision
+        case customData
+    }
+    
     var capabilities: [String]?
     var espDevice: ESPDevice!
     var pop = ""
@@ -45,22 +50,17 @@ class ClaimViewController: UIViewController {
 
     // On click of next button, establish session with device using connect API.
     @IBAction func nextBtnClicked(_: Any) {
-        pop = popTextField.text ?? ""
-        Utility.showLoader(message: "Connecting to device", view: view)
-        espDevice.security = Utility.shared.espAppSettings.securityMode
-        espDevice.connect(delegate: self) { status in
-            DispatchQueue.main.async {
-                Utility.hideLoader(view: self.view)
-                switch status {
-                case .connected:
-                    self.goToProvision()
-                case let .failedToConnect(error):
-                    self.showStatusScreen(error: error)
-                default:
-                    let action = UIAlertAction(title: "Retry", style: .default, handler: nil)
-                    self.showAlert(error: "Device disconnected", action: action)
-                }
-            }
+        popTextField.endEditing(true)
+        let alert = UIAlertController(title: "Select a Workflow", message: "Provision will allow you to provision wifi. Custom Data will allow you to send custom data", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Provision", style: .default, handler: { _ in
+            self.startConnection(workflow: .provision)
+        }))
+        alert.addAction(UIAlertAction(title: "Send Custom Data", style: .default, handler: { _ in
+            self.startConnection(workflow: .customData)
+        }))
+        
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -73,16 +73,25 @@ class ClaimViewController: UIViewController {
             statusVC.step1Failed = true
             statusVC.message = error.description
             self.navigationController?.pushViewController(statusVC, animated: true)
-
     }
 
-    // Go to provision screen, called when device is connected.
+    // Go to provision screen
     func goToProvision() {
         DispatchQueue.main.async {
             Utility.hideLoader(view: self.view)
             let provisionVC = self.storyboard?.instantiateViewController(withIdentifier: "provision") as! ProvisionViewController
             provisionVC.espDevice = self.espDevice
             self.navigationController?.pushViewController(provisionVC, animated: true)
+        }
+    }
+    
+    // Go to custom data screen
+    func goToCustomDataUI() {
+        DispatchQueue.main.async {
+            Utility.hideLoader(view: self.view)
+            let customDataVC = self.storyboard?.instantiateViewController(withIdentifier: "customData") as! CustomDataViewController
+            customDataVC.espDevice = self.espDevice
+            self.navigationController?.pushViewController(customDataVC, animated: true)
         }
     }
 
@@ -92,6 +101,31 @@ class ClaimViewController: UIViewController {
         let alertController = UIAlertController(title: "Error!", message: error, preferredStyle: .alert)
         alertController.addAction(action)
         present(alertController, animated: true, completion: nil)
+    }
+    
+    func startConnection(workflow: WorkflowOption) {
+        pop = popTextField.text ?? ""
+        Utility.showLoader(message: "Connecting to device", view: self.view)
+        espDevice.security = Utility.shared.espAppSettings.securityMode
+        espDevice.connect(delegate: self) { status in
+            DispatchQueue.main.async {
+                Utility.hideLoader(view: self.view)
+                switch status {
+                case .connected:
+                    switch workflow {
+                    case .provision:
+                        self.goToProvision()
+                    case .customData:
+                        self.goToCustomDataUI()
+                    }
+                case let .failedToConnect(error):
+                    self.showStatusScreen(error: error)
+                default:
+                    let action = UIAlertAction(title: "Retry", style: .default, handler: nil)
+                    self.showAlert(error: "Device disconnected", action: action)
+                }
+            }
+        }
     }
 }
 

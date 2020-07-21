@@ -6,7 +6,7 @@ target 'ESPProvisionSample' do
   use_frameworks!
 
   # Pods for ESPProvisionSample
-  pod 'ESPProvision'
+  pod 'ESPProvision', :path=> '~/src/lapumb-spindance_provisioning/esp-idf-provisioning-ios'
   pod 'MBProgressHUD'
 
   target 'ESPProvisionSampleTests' do

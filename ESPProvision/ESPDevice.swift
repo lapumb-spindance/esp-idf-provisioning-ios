@@ -83,6 +83,7 @@ public class ESPDevice {
     
     private var transportLayer: ESPCommunicable!
     private var provision: ESPProvision!
+    private var customData: CustomData!
     private var softAPPassword:String?
     private var proofOfPossession:String?
     private var retryScan = false
@@ -199,60 +200,18 @@ public class ESPDevice {
     ///     - data: Data to be sent to device.
     ///     - completionHandler: The completion handler that is called when data transmission is successful.
     ///                          Parameter of block include response recieved from the HTTP request or error if any.
-    public func sendData(path:String, data:Data, completionHandler: @escaping (Data?, ESPSessionError?) -> Swift.Void) {
+    public func sendCustomData(key: UInt32, str_info: String, int_info: UInt32, completionHandler: @escaping (CustomEndpointResponse?) -> Swift.Void) {
+        self.customData = CustomData(session: session)
         if session == nil, !session.isEstablished {
-            completionHandler(nil,.sessionNotEstablished)
+            completionHandler(nil)
         } else {
-            self.sendDataToDevice(path: path, data: data, retryOnce: true, completionHandler: completionHandler)
-        }
-    }
-    
-    private func sendDataToDevice(path:String, data:Data, retryOnce:Bool, completionHandler: @escaping (Data?, ESPSessionError?) -> Swift.Void) {
-        guard let encryptedData = securityLayer.encrypt(data: data) else {
-            completionHandler(nil,.securityMismatch)
-            return
-        }
-        switch transport {
-        case .ble:
-            espBleTransport.SendConfigData(path: path, data: encryptedData) { response, error in
-                guard error == nil, response != nil else {
-                    completionHandler(nil,.sendDataError(error!))
-                    return
-                }
-                if let responseData = self.securityLayer.decrypt(data: response!) {
-                    completionHandler(responseData, nil)
+            customData.sendCustomData(key: key, str_info: str_info, int_info: int_info) { response, error in
+                if (response?.status == CustomConfigStatus.success) {
+                    let resp = CustomEndpointResponse(respStr: response?.respStr ?? "custom data send fail", errCode: response?.errCode ?? ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
+                    completionHandler(resp)
                 } else {
-                    completionHandler(nil,.encryptionError)
-                }
-            }
-        default:
-            espSoftApTransport.SendConfigData(path: path, data: encryptedData) { response, error in
-                
-                if error != nil, response == nil {
-                    if retryOnce, self.isNetworkDisconnected(error: error!) {
-                                DispatchQueue.main.async {
-                                    ESPLog.log("Retrying sending data to custom path...")
-                                    self.connect { status in
-                                        switch status {
-                                        case .connected:
-                                            self.sendDataToDevice(path: path, data: data, retryOnce: false, completionHandler: completionHandler)
-                                            return
-                                        default:
-                                            completionHandler(nil,.sendDataError(error!))
-                                            return
-                                        }
-                                    }
-                                }
-                        }
-                    else {
-                        completionHandler(nil,.sendDataError(error!))
-                    }
-                } else {
-                    if let responseData = self.securityLayer.decrypt(data: response!) {
-                        completionHandler(responseData, nil)
-                    } else {
-                        completionHandler(nil,.encryptionError)
-                    }
+                    ESPLog.log("sendCustomData error: \(error?.localizedDescription ?? "")")
+                    completionHandler(nil)
                 }
             }
         }
@@ -272,8 +231,6 @@ public class ESPDevice {
         } else {
             provisionDevice(ssid: ssid, passPhrase: passPhrase, retryOnce: true, completionHandler: completionHandler)
         }
-      
-        
     }
     
     private func provisionDevice(ssid: String, passPhrase: String = "", retryOnce: Bool, completionHandler: @escaping (ESPProvisionStatus) -> Void) {

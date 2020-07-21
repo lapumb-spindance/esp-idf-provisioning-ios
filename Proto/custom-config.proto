@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+enum CustomConfigStatus {
+    Success = 0;
+    InvalidSecScheme = 1;
+    InvalidProto = 2;
+    TooManySessions = 3;
+    InvalidArgument = 4;
+    InternalError = 5;
+    CryptoError = 6;
+    InvalidSession = 7;
+}
+
+message CustomConfigRequest {
+    uint32 config_key = 1; 
+    string str_data = 2; 
+    uint32 int_data = 3; 
+}
+
+message CustomConfigResponse {
+    CustomConfigStatus status = 1;
+    string resp_str = 2;
+    uint32 err_code = 3; 
+}

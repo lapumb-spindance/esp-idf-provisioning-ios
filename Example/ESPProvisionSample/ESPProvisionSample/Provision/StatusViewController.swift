@@ -56,6 +56,8 @@ class StatusViewController: UIViewController {
     // MARK: - IBActions
     
     @IBAction func goToFirstView(_: Any) {
+        // disconnect if we are still connected
+        espDevice.disconnect()
         navigationController?.popToRootViewController(animated: true)
     }
     
