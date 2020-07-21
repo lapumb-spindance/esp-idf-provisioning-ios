@@ -24,7 +24,7 @@ class CustomData {
     ///
     /// - Parameter session: Initialised session object
     init(session: ESPSession) {
-        ESPLog.log("Initialising provision class.")
+        ESPLog.log("Initialising CustomData class.")
         self.session = session
         transportLayer = session.transportLayer
         securityLayer = session.securityLayer
@@ -48,7 +48,7 @@ class CustomData {
                 if let message = message {
                     transportLayer.SendConfigData(path: ESP_CUSTOM_CONFIG_ENDPOINT, data: message) { response, error in
                         guard error == nil, response != nil else {
-                            print("error sending custom config.")
+                            ESPLog.log("error sending custom config, error = \(error.debugDescription)")
                             completionHandler(self.createCustomResponse(), error)
                             return
                         }
