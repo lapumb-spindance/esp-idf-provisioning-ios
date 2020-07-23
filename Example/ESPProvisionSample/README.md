@@ -45,6 +45,8 @@ This ensures that you have the following dependencies installed -
 
 - ESPProvision
 
+>Note: Update the `podfile` to use the path pointing to the ESPProvision directory from this fork. This fork directory contains logic to send custom data via a newly defined proto file.
+
   
 
 ## Build
@@ -64,12 +66,18 @@ There are multiple app variants that you can build using this repository. You ca
 
 
 
+## Building for SpinDance
 
+- Make sure you are part of the SpinDance development team
+- Ensure the signing capabilities are up to date
+>Note: Because of changes made in order to customize and lack of time, images will not load.
 
+### Navigate to Custom Data
 
-
-  
-
+- Connect to your ESP device as normal
+- Enter the POP and choose the "Send Custom Data" after selecting `Next`
+- Enter a key, string data, and/or integer data and press send
+>Note: The custom data handler expects a response to be returned. If a response is not returned, `Cancel` must be pressed to disconnect from the peripheral device.
   
 
 # Resources
