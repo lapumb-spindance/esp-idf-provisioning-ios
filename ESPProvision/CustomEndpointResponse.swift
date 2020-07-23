@@ -10,18 +10,14 @@ import Foundation
 
 public class CustomEndpointResponse {
     public var respStr: String
-    public var errCode: UInt32
+    public var errCode: Int32
     
-    public init(respStr: String, errCode: UInt32) {
+    public init(respStr: String, errCode: Int32) {
         self.respStr = respStr
         self.errCode = errCode
     }
     
-    public func getRespStr() -> String {
-        return respStr
-    }
-    
-    public func getErrCode() -> UInt32 {
-        return errCode
+    public func isSuccess() -> Bool {
+        return self.errCode == ESP_CUSTOM_CONFIG_SUCCESS
     }
 }

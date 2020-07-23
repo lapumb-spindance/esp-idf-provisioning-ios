@@ -9,16 +9,18 @@ enum CustomConfigStatus {
     InternalError = 5;
     CryptoError = 6;
     InvalidSession = 7;
+    Timeout = 8;
+    UnknownError = 9; 
 }
 
 message CustomConfigRequest {
-    uint32 config_key = 1; 
-    string str_data = 2; 
-    uint32 int_data = 3; 
+    uint32 config_key = 1;
+    string str_data = 2;
+    uint32 int_data = 3;
 }
 
 message CustomConfigResponse {
     CustomConfigStatus status = 1;
-    string resp_str = 2;
-    uint32 err_code = 3; 
+    string str_resp = 2;
+    int32 err_code = 3;
 }

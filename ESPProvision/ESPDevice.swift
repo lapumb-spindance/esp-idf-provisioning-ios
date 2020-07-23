@@ -203,15 +203,16 @@ public class ESPDevice {
     public func sendCustomData(key: UInt32, str_info: String, int_info: UInt32, completionHandler: @escaping (CustomEndpointResponse?) -> Swift.Void) {
         self.customData = CustomData(session: session)
         if session == nil, !session.isEstablished {
+            ESPLog.log("session is nil or not established.")
             completionHandler(nil)
         } else {
             customData.sendCustomData(key: key, str_info: str_info, int_info: int_info) { response, error in
                 if (response?.status == CustomConfigStatus.success) {
-                    let resp = CustomEndpointResponse(respStr: response?.respStr ?? "custom data send fail", errCode: response?.errCode ?? ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
+                    let resp = CustomEndpointResponse(respStr: response?.strResp ?? "Something went wrong", errCode: response?.errCode ?? ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
                     completionHandler(resp)
                 } else {
                     ESPLog.log("sendCustomData error: \(error?.localizedDescription ?? "")")
-                    completionHandler(nil)
+                    completionHandler(CustomEndpointResponse(respStr: response?.strResp ?? "Something went wrong", errCode: response?.errCode ?? ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE))
                 }
             }
         }

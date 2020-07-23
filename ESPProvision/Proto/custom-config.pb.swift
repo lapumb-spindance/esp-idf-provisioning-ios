@@ -30,6 +30,8 @@ enum CustomConfigStatus: SwiftProtobuf.Enum {
   case internalError // = 5
   case cryptoError // = 6
   case invalidSession // = 7
+  case timeout // = 8
+  case unknownError // = 9
   case UNRECOGNIZED(Int)
 
   init() {
@@ -46,6 +48,8 @@ enum CustomConfigStatus: SwiftProtobuf.Enum {
     case 5: self = .internalError
     case 6: self = .cryptoError
     case 7: self = .invalidSession
+    case 8: self = .timeout
+    case 9: self = .unknownError
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -60,6 +64,8 @@ enum CustomConfigStatus: SwiftProtobuf.Enum {
     case .internalError: return 5
     case .cryptoError: return 6
     case .invalidSession: return 7
+    case .timeout: return 8
+    case .unknownError: return 9
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -79,6 +85,8 @@ extension CustomConfigStatus: CaseIterable {
     .internalError,
     .cryptoError,
     .invalidSession,
+    .timeout,
+    .unknownError,
   ]
 }
 
@@ -107,9 +115,9 @@ struct CustomConfigResponse {
 
   var status: CustomConfigStatus = .success
 
-  var respStr: String = String()
+  var strResp: String = String()
 
-  var errCode: UInt32 = 0
+  var errCode: Int32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -128,6 +136,8 @@ extension CustomConfigStatus: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "InternalError"),
     6: .same(proto: "CryptoError"),
     7: .same(proto: "InvalidSession"),
+    8: .same(proto: "Timeout"),
+    9: .same(proto: "UnknownError"),
   ]
 }
 
@@ -176,7 +186,7 @@ extension CustomConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let protoMessageName: String = "CustomConfigResponse"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "status"),
-    2: .standard(proto: "resp_str"),
+    2: .standard(proto: "str_resp"),
     3: .standard(proto: "err_code"),
   ]
 
@@ -184,8 +194,8 @@ extension CustomConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
       case 1: try decoder.decodeSingularEnumField(value: &self.status)
-      case 2: try decoder.decodeSingularStringField(value: &self.respStr)
-      case 3: try decoder.decodeSingularUInt32Field(value: &self.errCode)
+      case 2: try decoder.decodeSingularStringField(value: &self.strResp)
+      case 3: try decoder.decodeSingularInt32Field(value: &self.errCode)
       default: break
       }
     }
@@ -195,18 +205,18 @@ extension CustomConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.status != .success {
       try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
     }
-    if !self.respStr.isEmpty {
-      try visitor.visitSingularStringField(value: self.respStr, fieldNumber: 2)
+    if !self.strResp.isEmpty {
+      try visitor.visitSingularStringField(value: self.strResp, fieldNumber: 2)
     }
     if self.errCode != 0 {
-      try visitor.visitSingularUInt32Field(value: self.errCode, fieldNumber: 3)
+      try visitor.visitSingularInt32Field(value: self.errCode, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: CustomConfigResponse, rhs: CustomConfigResponse) -> Bool {
     if lhs.status != rhs.status {return false}
-    if lhs.respStr != rhs.respStr {return false}
+    if lhs.strResp != rhs.strResp {return false}
     if lhs.errCode != rhs.errCode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

@@ -10,8 +10,8 @@ import Foundation
 import UIKit
 
 public let ESP_CUSTOM_CONFIG_ENDPOINT: String = "custom-config"
-public let ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE: UInt32 = 500
-public let ESP_CUSTOM_CONFIG_SUCCESS: UInt32 = 0
+public let ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE: Int32 = 500
+public let ESP_CUSTOM_CONFIG_SUCCESS: Int32 = 0
 
 class CustomData {
     private let session: ESPSession
@@ -84,10 +84,10 @@ class CustomData {
     ///    - status: status code, default invalidArgument
     ///    - respStr: response string, default ""
     ///    - errCode: error code, default ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE
-    private func createCustomResponse(status: CustomConfigStatus = .invalidArgument, respStr: String = "", errCode: UInt32 = ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE) -> CustomConfigResponse {
+    private func createCustomResponse(status: CustomConfigStatus = .invalidArgument, respStr: String = "", errCode: Int32 = ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE) -> CustomConfigResponse {
         var resp = CustomConfigResponse()
         resp.status = status
-        resp.respStr = respStr
+        resp.strResp = respStr
         resp.errCode = errCode
         
         return resp
@@ -97,18 +97,20 @@ class CustomData {
     /// - Returns
     ///     - CustomConfigResponse
     private func processSendCustomDataResponse(response: Data?) -> CustomConfigResponse {
-        ESPLog.log("process custom data response.")
-        guard let response = response else {
-            return createCustomResponse()
+        ESPLog.log("process custom data response")
+        guard let resp = response else {
+            ESPLog.log("response is nil")
+            return createCustomResponse(status: .unknownError, respStr: "Something went wrong, response is nil", errCode: ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
         }
         
-        let decryptedResponse = securityLayer.decrypt(data: response)!
+        let decryptedResponse = securityLayer.decrypt(data: resp)!
         do {
             let configResponse = try CustomConfigResponse(serializedData: decryptedResponse)
+            ESPLog.log("response received: \(configResponse.status), \(configResponse.strResp), \(configResponse.errCode)")
             return configResponse
         } catch {
-            ESPLog.log(error.localizedDescription)
-            return createCustomResponse(status: .internalError, respStr: "", errCode: ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
+            ESPLog.log("error decrypting data, error = \(error.localizedDescription)")
+            return createCustomResponse(status: .internalError, respStr: "Internal Error", errCode: ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE)
         }
     }
 }

@@ -20,7 +20,7 @@ class CustomDataViewController: UIViewController {
     
     var espDevice: ESPDevice!
     var key: UInt32!
-    var strData: String!
+    var strData: String? = "null"
     var intData: UInt32!
     
     override func viewDidLoad() {
@@ -62,9 +62,14 @@ class CustomDataViewController: UIViewController {
         
         print("Sending data: key: \(key ?? 1000), string data: \(strData ?? ""), int data: \(intData ?? 1000)")
         Utility.showLoader(message: "Sending data..", view: self.view)
-        espDevice.sendCustomData(key: key, str_info: strData, int_info: intData, completionHandler: { response in
+        espDevice.sendCustomData(key: key, str_info: strData ?? "null", int_info: intData, completionHandler: { response in
             Utility.hideLoader(view: self.view)
-            self.displayResult(response: response ?? CustomEndpointResponse(respStr: "Failed to parse response", errCode: ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE))
+            guard let resp = response else {
+                self.displayErrorAlert()
+                return
+            }
+            
+            self.displayResult(response: resp)
         })
     }
     
@@ -72,10 +77,9 @@ class CustomDataViewController: UIViewController {
     private func inputIsValid() -> Bool {
         // TODO: clean up; need more explicit validation
         let tempKey = key ?? 1000
-        let tempStr = strData ?? nil
         let tempInt = intData ?? 1000
         
-        return tempKey < 1000 && tempStr != nil && tempInt < 1000
+        return tempKey < 1000 && tempInt >= 0
     }
     
     private func disconnectAndPop() {
@@ -83,10 +87,19 @@ class CustomDataViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
     
+    private func displayErrorAlert() {
+        let alert = UIAlertController(title: "Uh Oh..", message: "Something went wrong, response is nil", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: { _ in
+            return
+        }))
+        
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func displayResult(response: CustomEndpointResponse) {
-        let title: String = response.errCode == ESP_CUSTOM_CONFIG_SUCCESS ? "Success" : "Failure"
-        let message: String = response.getRespStr() == "" ? "Failed to parse response" : response.getRespStr()
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: response.isSuccess() ? "Success!" : "Failure", message: response.respStr, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: { _ in
             return
         }))
