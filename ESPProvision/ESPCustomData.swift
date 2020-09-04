@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-public let ESP_CUSTOM_CONFIG_ENDPOINT: String = "custom-config"
+public let ESP_CUSTOM_CONFIG_ENDPOINT: String = "custom-endpoint"
 public let ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE: Int32 = 500
 public let ESP_CUSTOM_CONFIG_SUCCESS: Int32 = 0
 

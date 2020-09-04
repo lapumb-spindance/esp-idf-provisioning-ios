@@ -1,4 +1,4 @@
 
- let espGitVersion = "c2a1e03"
+ let espGitVersion = "7484bbc"
 
 
