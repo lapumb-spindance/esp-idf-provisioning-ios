@@ -62,7 +62,7 @@ class CustomDataViewController: UIViewController {
         
         print("Sending data: key: \(key ?? 1000), string data: \(strData ?? ""), int data: \(intData ?? 1000)")
         Utility.showLoader(message: "Sending data..", view: self.view)
-        espDevice.sendCustomData(key: key, str_info: strData ?? "null", int_info: intData, completionHandler: { response in
+        espDevice.sendJsonData(path: "introspect", payload: "testing123", completionHandler: { response in
             Utility.hideLoader(view: self.view)
             guard let resp = response else {
                 self.displayErrorAlert()
@@ -98,8 +98,8 @@ class CustomDataViewController: UIViewController {
         }
     }
     
-    private func displayResult(response: CustomEndpointResponse) {
-        let alert = UIAlertController(title: response.isSuccess() ? "Success!" : "Failure", message: response.respStr, preferredStyle: .alert)
+    private func displayResult(response: JsonResponse) {
+        let alert = UIAlertController(title: "received payload:", message: response.payload, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: { _ in
             return
         }))

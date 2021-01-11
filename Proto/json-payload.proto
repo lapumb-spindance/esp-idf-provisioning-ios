@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message JsonPayload {
+    // see https://developers.google.com/protocol-buffers/docs/encoding
+    string json_payload = 2;
+}

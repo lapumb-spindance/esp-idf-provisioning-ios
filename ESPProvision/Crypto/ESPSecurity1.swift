@@ -108,6 +108,7 @@ class ESPSecurity1: ESPCodeable {
     func decrypt(data: Data) -> Data? {
         ESPLog.log("Decrypting data security 1.")
         guard let cryptoAES = self.cryptoAES else {
+            ESPLog.log("cryptoAES is nil.")
             return nil
         }
         return cryptoAES.encrypt(data: data)

@@ -84,6 +84,7 @@ public class ESPDevice {
     private var transportLayer: ESPCommunicable!
     private var provision: ESPProvision!
     private var customData: CustomData!
+    private var jsonData: JsonData!
     private var softAPPassword:String?
     private var proofOfPossession:String?
     private var retryScan = false
@@ -213,6 +214,22 @@ public class ESPDevice {
                 } else {
                     ESPLog.log("sendCustomData error: \(error?.localizedDescription ?? "")")
                     completionHandler(CustomEndpointResponse(respStr: response?.strResp ?? "Something went wrong", errCode: response?.errCode ?? ESP_CUSTOM_CONFIG_DEFAULT_ERR_CODE))
+                }
+            }
+        }
+    }
+    
+    public func sendJsonData(path: String, payload: String, completionHandler: @escaping (JsonResponse?) -> Swift.Void) {
+        self.jsonData = JsonData(session: session)
+        if session == nil, !session.isEstablished {
+            ESPLog.log("session is nil or not established.")
+            completionHandler(nil)
+        } else {
+            jsonData.sendJsonData(path: path, json_string: payload) { response, error in
+                completionHandler(JsonResponse(payload: response?.jsonPayload ?? "Something went wrong.."))
+                
+                if nil != error {
+                    ESPLog.log("sendJsonPayload error: \(error?.localizedDescription ?? "")")
                 }
             }
         }
